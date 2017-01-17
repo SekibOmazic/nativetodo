@@ -4,6 +4,14 @@ import Header from './header'
 import Footer from './footer'
 import Row from "./row"
 
+const filterItems = (filter, items) => {
+  return items.filter((item) => {
+    if (filter === "ALL") return true
+    if (filter === "COMPLETED") return item.complete
+    if (filter === "ACTIVE") return !item.complete
+  })
+}
+
 class App extends Component {
   constructor(props) {
     super(props)
@@ -12,6 +20,7 @@ class App extends Component {
 
     this.state = {
       allComplete: false,
+      filter: "ALL",
       value: "",
       items: [],
       dataSource: ds.cloneWithRows([])
@@ -22,13 +31,18 @@ class App extends Component {
     this.setSource = this.setSource.bind(this)
     this.handleToggleComplete = this.handleToggleComplete.bind(this)
     this.handleRemoveItem = this.handleRemoveItem.bind(this)
+    this.handleFilter = this.handleFilter.bind(this)
+  }
+
+  handleFilter(filter) {
+    this.setSource(this.state.items, filterItems(filter, this.state.items), { filter })
   }
 
   handleRemoveItem(key) {
     const newItems = this.state.items.filter((item) => {
       return item.key !== key
     })
-    this.setSource(newItems, newItems)
+    this.setSource(newItems, filterItems(this.state.filter, newItems))
   }
 
   setSource(items, itemsDatasource, otherState = {}) {
@@ -49,7 +63,7 @@ class App extends Component {
       }
     })
 
-    this.setSource(newItems, newItems);
+    this.setSource(newItems, filterItems(this.state.filter, newItems));
   }
 
   handleToggleAllComplete() {
@@ -59,7 +73,7 @@ class App extends Component {
       complete
     }))
 
-    this.setSource(newItems, newItems, { allComplete: complete })
+    this.setSource(newItems, filterItems(this.state.filter, newItems), { allComplete: complete })
   }
 
   handleAddItem() {
@@ -74,7 +88,7 @@ class App extends Component {
       }
     ]
 
-    this.setSource(newItems, newItems, { value: "" })
+    this.setSource(newItems, filterItems(this.state.filter, newItems), { value: "" })
   }
 
   render() {
@@ -107,7 +121,10 @@ class App extends Component {
             }}
           />
         </View>
-        <Footer />
+        <Footer
+          onFilter={this.handleFilter}
+          filter={this.state.filter}
+        />
       </View>
     )
   }
